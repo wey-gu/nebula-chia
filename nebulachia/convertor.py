@@ -15,12 +15,12 @@ DEFAULT_OUTPUT_PATH = os.getcwd()
 CSV_WRITE_BATCH = 10000
 
 
-class ChaiBatchConvertor:
+class ChiaBatchConvertor:
     def __init__(self, db_path=None, output_path=None,
                  block_record_limit=None, coin_record_limit=None,
                  write_batch_size=None):
         """
-        Initilization for ChaiBatchConvertor.
+        Initilization for ChiaBatchConvertor.
         """
         if db_path is None:
             db_path = os.path.expanduser(DEFAULT_DB_PATH)
