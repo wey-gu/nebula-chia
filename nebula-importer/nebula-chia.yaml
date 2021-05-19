@@ -1,0 +1,272 @@
+version: v2
+description: nebula-chia importer config file
+removeTempFiles: false
+clientSettings:
+  retry: 3
+  concurrency: 1 # number of graph clients
+  channelBufferSize: 1
+  space: chia
+  connection:
+    user: root
+    password: nebula
+    address: graphd:9669
+  postStart:
+    commands: |
+      UPDATE CONFIGS storage:wal_ttl=3600;
+      UPDATE CONFIGS storage:rocksdb_column_family_options=true;
+      DROP SPACE IF EXISTS chia;
+      CREATE SPACE IF NOT EXISTS chia(partition_num=10, replica_factor=1, vid_type=FIXED_STRING(64));
+      USE chia;
+      CREATE TAG block(height int, is_peak bool, is_block bool, deficit int, fees int, required_iters int, signage_point_index int, block_timestamp timestamp);
+      CREATE TAG coin(confirmed_index int, spent_index int, is_spent bool, is_coinbase bool, amount int, coin_timestamp timestamp);
+      CREATE TAG puzzle();
+      CREATE EDGE prev_block();
+      CREATE EDGE prev_tran_block();
+      CREATE EDGE challenge_block();
+      CREATE EDGE farmer_puzzle();
+      CREATE EDGE spends();
+      CREATE EDGE confirms();
+      CREATE EDGE belongs_to();
+      CREATE EDGE child_of();
+    afterPeriod: 8s
+  preStop:
+    commands: |
+      UPDATE CONFIGS storage:rocksdb_column_family_options=false;
+      UPDATE CONFIGS storage:wal_ttl=86400;
+logPath: ./err/nebula-chia-importer.log
+files:
+  - path: ./block_record.csv
+    failDataPath: ./err/block_record.csv
+    batchSize: 2
+    inOrder: true
+    type: csv
+    csv:
+      withHeader: false
+      withLabel: false
+    schema:
+      type: vertex
+      vertex:
+        vid:
+          index: 0
+        tags:
+          - name: block
+            props:
+              - name: height
+                type: int
+                index: 2
+              - name: is_peak
+                type: bool
+                index: 3
+              - name: is_block
+                type: bool
+                index: 4
+              - name: deficit
+                type: int
+                index: 5
+              - name: fees
+                type: int
+                index: 8
+              - name: required_iters
+                type: int
+                index: 11
+              - name: signage_point_index
+                type: int
+                index: 12
+              - name: block_timestamp
+                type: timestamp
+                index: 13
+
+  - path: ./coin_record.csv
+    failDataPath: ./err/coin_record_coin.csv
+    batchSize: 2
+    inOrder: true
+    type: csv
+    csv:
+      withHeader: false
+      withLabel: false
+    schema:
+      type: vertex
+      vertex:
+        vid:
+          index: 0
+        tags:
+          - name: coin
+            props:
+              - name: confirmed_index
+                type: int
+                index: 1
+              - name: spent_index
+                type: int
+                index: 2
+              - name: is_spent
+                type: int
+                index: 3
+              - name: is_coinbase
+                type: bool
+                index: 4
+              - name: amount
+                type: bool
+                index: 7
+              - name: coin_timestamp
+                type: timestamp
+                index: 8
+
+  - path: ./coin_record.csv
+    failDataPath: ./err/coin_record_puzzle.csv
+    batchSize: 2
+    inOrder: true
+    type: csv
+    csv:
+      withHeader: false
+      withLabel: false
+    schema:
+      type: vertex
+      vertex:
+        vid:
+          index: 0
+        tags:
+          - name: puzzle
+
+  - path: ./block_record.csv
+    failDataPath: ./err/block_record_prev_block.csv
+    batchSize: 2
+    inOrder: true
+    type: csv
+    csv:
+      withHeader: false
+      withLabel: false
+    schema:
+      type: edge
+      edge:
+        name: prev_block
+        withRanking: false
+        srcVID:
+          index: 0
+        dstVID:
+          index: 1
+
+  - path: ./block_record.csv
+    failDataPath: ./err/block_record_prev_tran_block.csv
+    batchSize: 2
+    inOrder: true
+    type: csv
+    csv:
+      withHeader: false
+      withLabel: false
+    schema:
+      type: edge
+      edge:
+        name: prev_tran_block
+        withRanking: false
+        srcVID:
+          index: 0
+        dstVID:
+          index: 9
+
+  - path: ./block_record.csv
+    failDataPath: ./err/block_record_challenge_block.csv
+    batchSize: 2
+    inOrder: true
+    type: csv
+    csv:
+      withHeader: false
+      withLabel: false
+    schema:
+      type: edge
+      edge:
+        name: challenge_block
+        withRanking: false
+        srcVID:
+          index: 0
+        dstVID:
+          index: 6
+
+  - path: ./block_record.csv
+    failDataPath: ./err/block_record_farmer_puzzle.csv
+    batchSize: 2
+    inOrder: true
+    type: csv
+    csv:
+      withHeader: false
+      withLabel: false
+    schema:
+      type: edge
+      edge:
+        name: farmer_puzzle
+        withRanking: false
+        srcVID:
+          index: 0
+        dstVID:
+          index: 7
+
+  - path: ./coin_record.csv
+    failDataPath: ./err/coin_record_spends.csv
+    batchSize: 2
+    inOrder: true
+    type: csv
+    csv:
+      withHeader: false
+      withLabel: false
+    schema:
+      type: edge
+      edge:
+        name: spends
+        withRanking: false
+        srcVID:
+          index: 10
+        dstVID:
+          index: 0
+
+  - path: ./coin_record.csv
+    failDataPath: ./err/coin_record_confirms.csv
+    batchSize: 2
+    inOrder: true
+    type: csv
+    csv:
+      withHeader: false
+      withLabel: false
+    schema:
+      type: edge
+      edge:
+        name: confirms
+        withRanking: false
+        srcVID:
+          index: 9
+        dstVID:
+          index: 0
+
+  - path: ./coin_record.csv
+    failDataPath: ./err/coin_record_child_of.csv
+    batchSize: 2
+    inOrder: true
+    type: csv
+    csv:
+      withHeader: false
+      withLabel: false
+    schema:
+      type: edge
+      edge:
+        name: child_of
+        withRanking: false
+        srcVID:
+          index: 0
+        dstVID:
+          index: 6
+
+  - path: ./coin_record.csv
+    failDataPath: ./err/coin_record_belongs_to.csv
+    batchSize: 2
+    inOrder: true
+    type: csv
+    csv:
+      withHeader: false
+      withLabel: false
+    schema:
+      type: edge
+      edge:
+        name: belongs_to
+        withRanking: false
+        srcVID:
+          index: 0
+        dstVID:
+          index: 5

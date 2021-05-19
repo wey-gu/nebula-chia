@@ -56,3 +56,27 @@ $ ls -lth
 ...
 
 ```
+
+#### Step2, Import CSV files to Nebula Graph
+
+In above steps, we already have `coin_record.csv` and `block_record.csv` generated, now we could import the data into a nebula graph cluster with the help of [Nebula-Importer](https://github.com/vesoft-inc/nebula-importer/).
+
+The `nebula-chia.yaml` in this repo is the config file for nebula-importer.
+
+```bash
+❯ tree nebula-importer
+nebula-importer
+└── nebula-chia.yaml
+```
+
+Below is an example of running importer, which assumed both our CSV files and the `nebula-chia.yaml` placed in path `/home/nebula/chia/`.
+
+```bash
+docker run --rm -ti \
+    --network=nebula-docker-compose_nebula-net \
+    -v /home/nebula/chia/nebula-chia.yaml:/root/nebula-chia.yaml \
+    -v /home/nebula/chia:/root \
+    vesoft/nebula-importer:v2 \
+    --config /root/nebula-chia.yaml
+```
+
