@@ -74,7 +74,6 @@ Below is an example of running importer, which assumed both our CSV files and th
 ```bash
 docker run --rm -ti \
     --network=nebula-docker-compose_nebula-net \
-    -v /home/nebula/chia/nebula-chia.yaml:/root/nebula-chia.yaml \
     -v /home/nebula/chia:/root \
     vesoft/nebula-importer:v2 \
     --config /root/nebula-chia.yaml
