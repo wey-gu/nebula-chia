@@ -3,7 +3,7 @@ description: nebula-chia importer config file
 removeTempFiles: false
 clientSettings:
   retry: 3
-  concurrency: 1 # number of graph clients
+  concurrency: 3 # number of graph clients
   channelBufferSize: 1
   space: chia
   connection:
@@ -12,13 +12,11 @@ clientSettings:
     address: graphd:9669
   postStart:
     commands: |
-      UPDATE CONFIGS storage:wal_ttl=3600;
-      UPDATE CONFIGS storage:rocksdb_column_family_options=true;
       DROP SPACE IF EXISTS chia;
       CREATE SPACE IF NOT EXISTS chia(partition_num=10, replica_factor=1, vid_type=FIXED_STRING(64));
       USE chia;
-      CREATE TAG block(height int, is_peak bool, is_block bool, deficit int, fees int, required_iters int, signage_point_index int, block_timestamp timestamp);
-      CREATE TAG coin(confirmed_index int, spent_index int, is_spent bool, is_coinbase bool, amount int, coin_timestamp timestamp);
+      CREATE TAG block(height int, is_peak bool, is_block bool, deficit int, fees int, required_iters int, signage_point_index int, block_timestamp int);
+      CREATE TAG coin(confirmed_index int, spent_index int, is_spent bool, is_coinbase bool, amount int, coin_timestamp int);
       CREATE TAG puzzle();
       CREATE EDGE prev_block();
       CREATE EDGE prev_tran_block();
@@ -37,7 +35,7 @@ logPath: ./err/nebula-chia-importer.log
 files:
   - path: ./block_record.csv
     failDataPath: ./err/block_record.csv
-    batchSize: 2
+    batchSize: 768
     inOrder: true
     type: csv
     csv:
@@ -73,12 +71,12 @@ files:
                 type: int
                 index: 12
               - name: block_timestamp
-                type: timestamp
+                type: int
                 index: 13
 
   - path: ./coin_record.csv
     failDataPath: ./err/coin_record_coin.csv
-    batchSize: 2
+    batchSize: 768
     inOrder: true
     type: csv
     csv:
@@ -108,12 +106,12 @@ files:
                 type: bool
                 index: 7
               - name: coin_timestamp
-                type: timestamp
+                type: int
                 index: 8
 
   - path: ./coin_record.csv
     failDataPath: ./err/coin_record_puzzle.csv
-    batchSize: 2
+    batchSize: 768
     inOrder: true
     type: csv
     csv:
@@ -129,7 +127,7 @@ files:
 
   - path: ./block_record.csv
     failDataPath: ./err/block_record_prev_block.csv
-    batchSize: 2
+    batchSize: 768
     inOrder: true
     type: csv
     csv:
@@ -147,7 +145,7 @@ files:
 
   - path: ./block_record.csv
     failDataPath: ./err/block_record_prev_tran_block.csv
-    batchSize: 2
+    batchSize: 768
     inOrder: true
     type: csv
     csv:
@@ -165,7 +163,7 @@ files:
 
   - path: ./block_record.csv
     failDataPath: ./err/block_record_challenge_block.csv
-    batchSize: 2
+    batchSize: 768
     inOrder: true
     type: csv
     csv:
@@ -183,7 +181,7 @@ files:
 
   - path: ./block_record.csv
     failDataPath: ./err/block_record_farmer_puzzle.csv
-    batchSize: 2
+    batchSize: 768
     inOrder: true
     type: csv
     csv:
@@ -201,7 +199,7 @@ files:
 
   - path: ./coin_record.csv
     failDataPath: ./err/coin_record_spends.csv
-    batchSize: 2
+    batchSize: 768
     inOrder: true
     type: csv
     csv:
@@ -219,7 +217,7 @@ files:
 
   - path: ./coin_record.csv
     failDataPath: ./err/coin_record_confirms.csv
-    batchSize: 2
+    batchSize: 768
     inOrder: true
     type: csv
     csv:
@@ -237,7 +235,7 @@ files:
 
   - path: ./coin_record.csv
     failDataPath: ./err/coin_record_child_of.csv
-    batchSize: 2
+    batchSize: 768
     inOrder: true
     type: csv
     csv:
@@ -255,7 +253,7 @@ files:
 
   - path: ./coin_record.csv
     failDataPath: ./err/coin_record_belongs_to.csv
-    batchSize: 2
+    batchSize: 768
     inOrder: true
     type: csv
     csv:
